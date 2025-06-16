@@ -5,6 +5,15 @@ services:
     build: ./nginx
     ports:
       - "8090:8090"
+    depends_on:
+      - chat-service
+    networks:
+      - app-network
+
+  chat-service:
+    build: ./chat-service
+    expose:
+      - "5000"
     networks:
       - app-network
 
