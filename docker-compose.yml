@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  nginx:
+    build: ./nginx
+    ports:
+      - "8090:8090"
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
