@@ -23,31 +23,33 @@
         <button id="startChatBtn" class="btn btn-primary">Start Chat</button>
     </div>
 
-    <div id="chatSection" class="container mt-4" style="display: none;">
+    <div id="chatSection" class="container mt-4">
+        <div class="row">
+            <h4 class="text-primary" id="login-as"></h4>
+        </div>
         <div class="row">
             <!-- User Search Sidebar -->
-            <div class="col-md-4 border-end">
-                <h5>Search Users</h5>
+            <div class="col-md-4 border-end d-flex flex-column border-primary border-3 rounded-start p-3 bg-white">
+                <h5 class="text-primary">Search Users</h5>
                 <div class="input-group mb-2">
-                    <input type="text" id="searchInput" class="form-control" placeholder="Search by name...">
+                    <input type="text" id="searchInput" class="form-control" placeholder="Search by name..." />
                     <button id="searchBtn" class="btn btn-outline-secondary">Search</button>
                 </div>
-                <ul id="userList" class="list-group"></ul>
+                <div id="userListBox" class="list-group flex-grow-1 border-success border-3 pt-2"></div>
             </div>
 
             <!-- Chat Area -->
-            <div class="col-md-8 d-flex flex-column">
+            <div class="col-md-8 d-flex flex-column border-success border-3 rounded-end p-3 bg-light">
                 <div id="chatHeader" class="border-bottom mb-2 py-2">
-                    <strong id="chatWith">Select a user to chat</strong>
+                    <strong id="chatWith" class="text-success">Select a user to chat</strong>
                 </div>
 
-                <div id="chatBox" class="flex-grow-1 border rounded p-2 overflow-auto" style="height: 300px;">
-                    <!-- Chat messages will be added here -->
-                </div>
+                <div id="chatBox" class="d-flex flex-column border rounded p-2 mb-2 bg-white"></div>
 
                 <div class="mt-2 d-flex">
-                    <input type="text" id="messageInput" class="form-control me-2" placeholder="Type a message...">
-                    <button id="sendBtn" class="btn btn-primary">Send</button>
+                    <input type="text" id="messageInput" class="form-control me-2" placeholder="Type a message..."
+                        autocomplete="off" />
+                    <button id="sendBtn" class="btn btn-success">Send</button>
                 </div>
             </div>
         </div>

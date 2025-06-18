@@ -6,10 +6,11 @@ function generateUUID() {
     return crypto.randomUUID();
 }
 
-function enableChat() {
+function enableChat(name) {
     const startSection = document.getElementById("startSection");
     const chatSection = document.getElementById("chatSection");
     const statusSpan = document.getElementById("status");
+    const loginAs = document.getElementById("login-as")
     statusSpan.textContent = "Connected";
     statusSpan.classList.remove("text-danger");
     statusSpan.classList.add("text-success");
@@ -17,32 +18,15 @@ function enableChat() {
     // Show chat section, hide start section
     startSection.style.display = "none";
     chatSection.style.display = "block";
+    document.getElementById("login-as").innerHTML = "Logged in as " + name
 
 }
 
 const messageHandlers = {
-    search_results: (data) => {
-        const users = data.matches || [];
-        const userList = document.getElementById("userList");
-        userList.innerHTML = "";
-
-        if (users.length === 0) {
-            userList.innerHTML = "<li>No matching users found</li>";
-            return;
-        }
-
-        users.forEach(username => {
-            const li = document.createElement("li");
-            li.textContent = username;
-            li.style.cursor = "pointer";
-            li.onclick = () => selectUser(username);
-            userList.appendChild(li);
-        });
-    },
+    search_results: (data) => displayUsers(data),
 
     direct_message: (data) => {
-        // handle direct messages here
-        // e.g., showMessage(data.from, data.message);
+        console.log(data)
     },
 
     system: (data) => {
@@ -51,17 +35,27 @@ const messageHandlers = {
 
 };
 
-let selectedUser = null;
+function displayUsers(data) {
+    const users = data.matches || [];
+    const userListBox = document.getElementById('userListBox');
+    userListBox.innerHTML = '';
 
-function processMessage(data) {
-    const handler = messageHandlers[data.type];
-    if (handler) {
-        handler(data);
-    } else {
-        console.warn("Unknown message type:", data.type);
+    if (users.length === 0) {
+        userListBox.innerHTML = '<p class="text-muted p-3">No users found</p>';
+        return;
     }
+
+    users.forEach(user => {
+        const userDiv = document.createElement('div');
+        userDiv.textContent = user;
+        userDiv.className = 'p-3 border-bottom user-row';
+        userDiv.style.cursor = 'pointer';
+        userDiv.onclick = () => selectUser(user);
+        userListBox.appendChild(userDiv);
+    });
 }
 
+let selectedUser = null;
 function selectUser(username) {
     selectedUser = username;
     document.getElementById("chatWith").innerText = username;
@@ -69,15 +63,27 @@ function selectUser(username) {
     document.getElementById("chatMessages").innerHTML = "";
 }
 
+function processMessage(data) {
+    server_msg = JSON.parse(data)
+    const handler = messageHandlers[server_msg.type];
+    if (handler) {
+        handler(server_msg);
+    } else {
+        console.warn("Unknown message type:", server_msg.type);
+    }
+}
 
 
-function createwsconnection(data) {
+
+
+
+function createwsconnection(data, name) {
 
     ws = new WebSocket(`ws://${location.host}/startchat/ws?clientId=${data.id}`);
 
     ws.onopen = () => {
         sessionStorage.setItem("client_id", data.id)
-        enableChat()
+        enableChat(name)
         ws.send(JSON.stringify({ type: "register", ...data }));
         // Start heartbeats every 30 seconds
         heartbeatInterval = setInterval(() => {
@@ -108,7 +114,7 @@ document.getElementById('startChatBtn').onclick = async () => {
         const res = await fetch(`/startchat?name=${encodeURIComponent(name)}`);
         if (!res.ok) throw new Error("Network response was not ok");
         const data = await res.json();
-        createwsconnection(data)
+        createwsconnection(data, name)
     } catch (err) {
         alert("Error: " + err.message);
     }
