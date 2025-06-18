@@ -35,3 +35,37 @@
 #chatSection {
     display: none;
 }
+
+#userList {
+    border-left: 4px solid #0d6efd;
+    /* Blue */
+}
+
+#chatBox {
+    border-left: 4px solid #198754;
+    /* Green */
+}
+
+.message {
+    max-width: 70%;
+    padding: 10px 15px;
+    border-radius: 15px;
+    margin-bottom: 8px;
+    word-wrap: break-word;
+}
+
+.message.sent {
+    align-self: flex-end;
+    background-color: #d1e7dd;
+    border: 2px solid #198754;
+    /* Bootstrap success */
+    color: #0f5132;
+}
+
+.message.received {
+    align-self: flex-start;
+    background-color: #cfe2ff;
+    border: 2px solid #0d6efd;
+    /* Bootstrap primary */
+    color: #052c65;
+}

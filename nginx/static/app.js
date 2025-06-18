@@ -22,19 +22,6 @@ function enableChat(name) {
 
 }
 
-const messageHandlers = {
-    search_results: (data) => displayUsers(data),
-
-    direct_message: (data) => {
-        console.log(data)
-    },
-
-    system: (data) => {
-        console.log(data)
-    },
-
-};
-
 function displayUsers(data) {
     const users = data.matches || [];
     const userListBox = document.getElementById('userListBox');
@@ -63,6 +50,19 @@ function selectUser(username) {
     document.getElementById("chatMessages").innerHTML = "";
 }
 
+const messageHandlers = {
+    search_results: (data) => displayUsers(data),
+
+    direct_message: (data) => {
+        console.log(data)
+    },
+
+    system: (data) => {
+        console.log(data)
+    },
+
+};
+
 function processMessage(data) {
     server_msg = JSON.parse(data)
     const handler = messageHandlers[server_msg.type];
@@ -73,7 +73,16 @@ function processMessage(data) {
     }
 }
 
+function addMessage(text, isSentByUser) {
+    const chatBox = document.getElementById("chatBox");
 
+    const msgElem = document.createElement("div");
+    msgElem.classList.add("message", isSentByUser ? "sent" : "received");
+    msgElem.textContent = text;
+
+    chatBox.appendChild(msgElem);
+    chatBox.scrollTop = chatBox.scrollHeight; // Auto-scroll
+}
 
 
 
@@ -107,6 +116,14 @@ function createwsconnection(data, name) {
     };
 }
 
+const sendServeMessage = (data) => {
+    if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify(data));
+    } else {
+        console.warn("WebSocket is not open.");
+    }
+}
+
 document.getElementById('startChatBtn').onclick = async () => {
     const name = document.getElementById('username').value
 
@@ -122,15 +139,11 @@ document.getElementById('startChatBtn').onclick = async () => {
 
 document.getElementById('searchBtn').onclick = async () => {
     const user = document.getElementById('searchInput').value;
-    if (ws && ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({
-            type: "search_users",
-            client_id: sessionStorage.getItem("client_id"),
-            id: user
-        }));
-    } else {
-        console.warn("WebSocket is not open.");
-    }
+    sendServeMessage({
+        type: "search_users",
+        client_id: sessionStorage.getItem("client_id"),
+        id: user
+    })
 
 }
 
@@ -139,4 +152,24 @@ document.addEventListener("DOMContentLoaded", function () {
     if (statusEl) {
         statusEl.innerText = 'Loaded (but not connected yet)';
     }
+});
+
+document.getElementById("sendBtn").addEventListener("click", () => {
+    const message = document.getElementById("messageInput").value.trim();
+    const recipient = selectedUser
+
+    if (!message || !recipient || recipient === "Select a user to chat") {
+        alert("Please enter a message and select a user to chat with.");
+        return;
+    }
+
+    const payload = {
+        type: "message",
+        to: recipient,
+        text: message,
+        timestamp: Date.now()
+    };
+    ws.send(JSON.stringify(payload));
+    addMessage(message, true);
+    document.getElementById("messageInput").value = "";
 });
