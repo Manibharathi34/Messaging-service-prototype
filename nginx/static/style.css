@@ -1,5 +1,18 @@
-body {
-    font-family: sans-serif;
-    padding: 2rem;
-    background: #f0f0f0;
+#chatSection {
+    display: none;
+}
+
+.chat-box {
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background-color: #ffffff;
+    height: 300px;
+    overflow-y: scroll;
+}
+
+.chat-box p {
+    margin: 0;
+    padding: 0.2rem 0;
 }

@@ -2,18 +2,57 @@
 <html>
 
 <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Chat App</title>
-
+    <link rel="stylesheet" href="bootstrap.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
 
-<body>
-    <h1>Welcome to Chat App</h1>
-    <p>Status: <span id="status">Disconnected</span></p>
-    <label for="username">Username:</label>
-    <input type="text" id="username" placeholder="Enter your username">
-    <br><br>
-    <button id="startChatBtn">Start Chat</button>
+<body class="bg-light text-dark">
+
+    <div class="container mt-5" id="startSection">
+        <h1 class="mb-4">Welcome to Chat App</h1>
+        <p>Status: <span id="status" class="fw-bold text-danger">Disconnected</span></p>
+
+        <div class="mb-3">
+            <label for="username" class="form-label">Username:</label>
+            <input type="text" class="form-control w-50" id="username" placeholder="Enter your username">
+        </div>
+
+        <button id="startChatBtn" class="btn btn-primary">Start Chat</button>
+    </div>
+
+    <div id="chatSection" class="container mt-4" style="display: none;">
+        <div class="row">
+            <!-- User Search Sidebar -->
+            <div class="col-md-4 border-end">
+                <h5>Search Users</h5>
+                <div class="input-group mb-2">
+                    <input type="text" id="searchInput" class="form-control" placeholder="Search by name...">
+                    <button id="searchBtn" class="btn btn-outline-secondary">Search</button>
+                </div>
+                <ul id="userList" class="list-group"></ul>
+            </div>
+
+            <!-- Chat Area -->
+            <div class="col-md-8 d-flex flex-column">
+                <div id="chatHeader" class="border-bottom mb-2 py-2">
+                    <strong id="chatWith">Select a user to chat</strong>
+                </div>
+
+                <div id="chatBox" class="flex-grow-1 border rounded p-2 overflow-auto" style="height: 300px;">
+                    <!-- Chat messages will be added here -->
+                </div>
+
+                <div class="mt-2 d-flex">
+                    <input type="text" id="messageInput" class="form-control me-2" placeholder="Type a message...">
+                    <button id="sendBtn" class="btn btn-primary">Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
     <script src="app.js"></script>
 </body>
