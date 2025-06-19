@@ -1,8 +1,5 @@
-import asyncio
-import json
 import logging
 from typing import Dict
-from datetime import datetime
 from fastapi import WebSocket
 from fastapi.websockets import WebSocketState
 
@@ -11,8 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 class ConnectionManager:
-    def __init__(self):
-        self.active_connections: Dict[str, WebSocket] = {}
+    active_connections: Dict[str, WebSocket] = {}
 
     async def connect(self, client_id: str, websocket: WebSocket):
         if client_id in self.active_connections:

@@ -6,8 +6,8 @@ from typing import List
 
 
 class SessionManager:
-    def __init__(self):
-        self.user_client_map: Dict[str, str] = {}
+
+    user_client_map: Dict[str, str] = {}
 
     def initialize_session(self, user_id: str) -> str:
         if user_id not in self.user_client_map:
@@ -15,6 +15,7 @@ class SessionManager:
         return self.user_client_map[user_id]
 
     def get_user_client_id(self, user_id: str) -> str:
+        print(f"users lis is {self.user_client_map.keys()}")
         return self.user_client_map[user_id]
 
     # def get_user(self, user: str) -> List[str]:
