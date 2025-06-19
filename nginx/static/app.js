@@ -6,7 +6,9 @@ function generateUUID() {
     return crypto.randomUUID();
 }
 
-function enableChat(name) {
+const getName = () => sessionStorage.getItem("name");
+
+function enableChat() {
     const startSection = document.getElementById("startSection");
     const chatSection = document.getElementById("chatSection");
     const statusSpan = document.getElementById("status");
@@ -18,7 +20,7 @@ function enableChat(name) {
     // Show chat section, hide start section
     startSection.style.display = "none";
     chatSection.style.display = "block";
-    document.getElementById("login-as").innerHTML = "Logged in as " + name
+    document.getElementById("login-as").innerHTML = "Logged in as " + getName()
 
 }
 
@@ -47,7 +49,7 @@ function selectUser(username) {
     selectedUser = username;
     document.getElementById("chatWith").innerText = username;
     document.getElementById("chatBox").style.display = "block";
-    document.getElementById("chatMessages").innerHTML = "";
+    document.getElementById("chatBox").innerHTML = "";
 }
 
 const messageHandlers = {
@@ -55,6 +57,7 @@ const messageHandlers = {
 
     direct_message: (data) => {
         console.log(data)
+        addMessage(data.message, true);
     },
 
     system: (data) => {
@@ -88,12 +91,12 @@ function addMessage(text, isSentByUser) {
 
 function createwsconnection(data, name) {
 
-    ws = new WebSocket(`ws://${location.host}/startchat/ws?clientId=${data.id}`);
+    ws = new WebSocket(`ws://${location.host}/startchat/ws?name=${data.id}`);
 
     ws.onopen = () => {
-        sessionStorage.setItem("client_id", data.id)
-        enableChat(name)
-        ws.send(JSON.stringify({ type: "register", ...data }));
+        sessionStorage.setItem("name", data.id)
+        enableChat()
+        ws.send(JSON.stringify({ type: "register", name: data.id }));
         // Start heartbeats every 30 seconds
         heartbeatInterval = setInterval(() => {
             if (ws.readyState === WebSocket.OPEN) {
@@ -141,8 +144,8 @@ document.getElementById('searchBtn').onclick = async () => {
     const user = document.getElementById('searchInput').value;
     sendServeMessage({
         type: "search_users",
-        client_id: sessionStorage.getItem("client_id"),
-        id: user
+        name: getName(),
+        term: user
     })
 
 }
@@ -157,6 +160,7 @@ document.addEventListener("DOMContentLoaded", function () {
 document.getElementById("sendBtn").addEventListener("click", () => {
     const message = document.getElementById("messageInput").value.trim();
     const recipient = selectedUser
+    const sender = getName()
 
     if (!message || !recipient || recipient === "Select a user to chat") {
         alert("Please enter a message and select a user to chat with.");
@@ -164,8 +168,9 @@ document.getElementById("sendBtn").addEventListener("click", () => {
     }
 
     const payload = {
-        type: "message",
+        type: "direct_message",
         to: recipient,
+        from: sender,
         text: message,
         timestamp: Date.now()
     };

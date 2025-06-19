@@ -9,9 +9,12 @@ class SessionManager:
     def __init__(self):
         self.user_client_map: Dict[str, str] = {}
 
-    def get_user_client_id(self, user_id: str) -> str:
+    def initialize_session(self, user_id: str) -> str:
         if user_id not in self.user_client_map:
             self.user_client_map[user_id] = str(uuid.uuid4())
+        return self.user_client_map[user_id]
+
+    def get_user_client_id(self, user_id: str) -> str:
         return self.user_client_map[user_id]
 
     # def get_user(self, user: str) -> List[str]:
