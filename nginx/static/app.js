@@ -47,24 +47,38 @@ function displayUsers(data) {
 let selectedUser = null;
 function selectUser(username) {
     selectedUser = username;
-    document.getElementById("chatWith").innerText = username;
+    chatWith.innerHTML = `Chatting with <span class="text-primary fw-bold">${username}</span>`;
     document.getElementById("chatBox").style.display = "block";
     document.getElementById("chatBox").innerHTML = "";
 }
 
 const messageHandlers = {
     search_results: (data) => displayUsers(data),
-
-    direct_message: (data) => {
-        console.log(data)
-        addMessage(data.message, true);
-    },
-
+    direct_message: (data) => processDirectMessage(data),
     system: (data) => {
         console.log(data)
     },
 
 };
+
+const processDirectMessage = (data) => {
+    const sender = data.from;
+    const message = data.message;
+    addMessage(`${sender}: ${message}`, false);
+    const userList = document.getElementById("userListBox");
+    const existingUser = Array.from(userList.children).find(
+        li => li.dataset.username === sender
+    );
+    if (!existingUser) {
+        const li = document.createElement("li");
+        li.className = "list-group-item list-group-item-action";
+        li.dataset.username = sender;
+        li.textContent = sender;
+        selectedUser = sender;
+        document.getElementById("chatWith").innerHTML = chatWith.innerHTML = `Chatting with <span class="text-primary fw-bold">${sender}</span>`;;
+        userList.appendChild(li);
+    }
+}
 
 function processMessage(data) {
     server_msg = JSON.parse(data)
@@ -84,23 +98,22 @@ function addMessage(text, isSentByUser) {
     msgElem.textContent = text;
 
     chatBox.appendChild(msgElem);
-    chatBox.scrollTop = chatBox.scrollHeight; // Auto-scroll
+    chatBox.scrollTop = chatBox.scrollHeight;
 }
 
 
 
-function createwsconnection(data, name) {
+function createwsconnection(data) {
 
-    ws = new WebSocket(`ws://${location.host}/startchat/ws?name=${data.id}`);
+    ws = new WebSocket(`ws://${location.host}/startchat/ws?name=${getName()}`);
 
     ws.onopen = () => {
-        sessionStorage.setItem("name", data.id)
         enableChat()
-        ws.send(JSON.stringify({ type: "register", name: data.id }));
+        ws.send(JSON.stringify({ type: "register", name: getName() }));
         // Start heartbeats every 30 seconds
         heartbeatInterval = setInterval(() => {
             if (ws.readyState === WebSocket.OPEN) {
-                ws.send(JSON.stringify({ type: "heartbeat" }));
+                ws.send(JSON.stringify({ type: "heartbeat", name: getName() }));
                 console.log("Heartbeat sent");
             }
         }, 90000);
@@ -114,8 +127,14 @@ function createwsconnection(data, name) {
         console.error("WebSocket error:", error);
     };
 
-    ws.onclose = () => {
-        console.log("WebSocket connection closed.");
+    ws.onclose = (event) => {
+        if (event.code !== 1000 && event.wasClean === false) {
+            console.warn('WebSocket closed abnormally. Reloading page...');
+            location.reload();
+        } else {
+            console.log('WebSocket closed cleanly. Attempting to reconnect (or not, depending on logic).');
+            setTimeout(createwsconnection, 60000);
+        }
     };
 }
 
@@ -133,8 +152,8 @@ document.getElementById('startChatBtn').onclick = async () => {
     try {
         const res = await fetch(`/startchat?name=${encodeURIComponent(name)}`);
         if (!res.ok) throw new Error("Network response was not ok");
-        const data = await res.json();
-        createwsconnection(data, name)
+        sessionStorage.setItem("name", name)
+        createwsconnection()
     } catch (err) {
         alert("Error: " + err.message);
     }

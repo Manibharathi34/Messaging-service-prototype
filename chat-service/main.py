@@ -36,7 +36,6 @@ async def websocket_endpoint(websocket: WebSocket):
 
 # to be moved to seperate service
 async def process_message(message: str):
-    print(f"incoming message = {message}")
     data = json.loads(message)
     msg_type = data.get("type")
     client_id = ""
@@ -63,7 +62,9 @@ async def process_message(message: str):
                 },
             )
         case "heartbeat":
-            logger.info(f"💓 Heartbeat received from {client_id}")
+            logger.info(
+                f"💓 Heartbeat received from {session.get_user_client_id(data.get('name'))}"
+            )
         case _:
             await connection.send_message(
                 client_id,
