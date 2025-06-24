@@ -14,12 +14,14 @@ class ConnectionManager:
         if client_id in self.active_connections:
             old_ws = self.active_connections[client_id]
             await old_ws.close(code=1000)
-            logger.info(f"Replaced existing connection for client {client_id}")
+            logger.info("Replaced existing connection for client%s", client_id)
         await websocket.accept()
         self.active_connections[client_id] = websocket
         logger.info("connected succesfully!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         logger.info(
-            f"Client {client_id} connected. Total connections: {len(self.active_connections)}"
+            "Client %s connected. Total connections: %s",
+            client_id,
+            len(self.active_connections),
         )
         await self.send_message(
             client_id,
@@ -33,20 +35,24 @@ class ConnectionManager:
         if client_id in self.active_connections:
             del self.active_connections[client_id]
             logger.info(
-                f"Client {client_id} disconnected. Total connections: {len(self.active_connections)}"
+                "Client %s disconnected. Total connections: %s",
+                client_id,
+                len(self.active_connections),
             )
 
-    async def send_message(self, client_id: str, message: dict):
+    async def send_message(self, client_id: str, message: dict) -> str:
         websocket = self.active_connections.get(client_id)
         if not websocket:
             logger.warning(
-                f"Attempted to send message to unknown client_id: {client_id}"
+                "Attempted to send message to unknown client_id: %s", client_id
             )
-            return
+            return "sent"
 
         if websocket.client_state == WebSocketState.CONNECTED:
             try:
                 await websocket.send_json(message)
             except Exception as e:
-                logger.error(f"Failed to send message to {client_id}: {e}")
+                logger.error("Failed to send message to %s: %s", client_id, e)
                 await self.disconnect(client_id)
+                return "sent"
+            return "delivered"

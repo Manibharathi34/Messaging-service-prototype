@@ -1,22 +1,26 @@
-from typing import Dict
-import uuid
-from typing import List
+from typing import Dict, List
+from db.db import DataBase
 
-# import difflib
+db = DataBase()
 
 
 class SessionManager:
 
     user_client_map: Dict[str, str] = {}
 
-    def initialize_session(self, user_id: str) -> str:
-        if user_id not in self.user_client_map:
-            self.user_client_map[user_id] = str(uuid.uuid4())
-        return self.user_client_map[user_id]
+    async def get_user_id(self, username: str) -> str:
 
-    def get_user_client_id(self, user_id: str) -> str:
-        print(f"users lis is {self.user_client_map.keys()}")
-        return self.user_client_map[user_id]
+        if username in self.user_client_map:
+            return self.user_client_map[username]
+        user_id = await db.get_user_by_name(username)
+        print(f"userid frm db is {user_id}")
+        if not user_id:
+            user_id = await db.create_users(
+                username=username, email=f"{username}@test.com"
+            )
+            print(f"newly created user id {user_id}")
+        self.user_client_map[username] = user_id
+        return user_id
 
     # def get_user(self, user: str) -> List[str]:
     #    user = user.lower()
@@ -29,3 +33,8 @@ class SessionManager:
         return [
             u for u in self.user_client_map if user in u.lower() and u.lower() != user
         ][:10]
+
+    async def search_users(self, query: str) -> List[str]:
+        results = await db.search_users_by_name(query)
+        users = [r["username"] for r in results]
+        return users

@@ -20,29 +20,42 @@ function enableChat() {
     // Show chat section, hide start section
     startSection.style.display = "none";
     chatSection.style.display = "block";
-    document.getElementById("login-as").innerHTML = "Logged in as " + getName()
+    loginAs.innerHTML = "Logged in as " + getName()
 
 }
 
-function displayUsers(data) {
-    const users = data.matches || [];
+function displayUsers(data, unreadSenders = []) {
+    const users = data.matches || unreadSenders;
     const userListBox = document.getElementById('userListBox');
     userListBox.innerHTML = '';
+
+
 
     if (users.length === 0) {
         userListBox.innerHTML = '<p class="text-muted p-3">No users found</p>';
         return;
     }
 
+
     users.forEach(user => {
         const userDiv = document.createElement('div');
         userDiv.textContent = user;
-        userDiv.className = 'p-3 border-bottom user-row';
+
+        userDiv.className = 'p-3 border-bottom user-row d-flex justify-content-between align-items-center';
         userDiv.style.cursor = 'pointer';
         userDiv.onclick = () => selectUser(user);
+
+        if (unreadSenders.includes(user)) {
+            const badge = document.createElement('span');
+            badge.className = 'badge bg-danger';
+            badge.textContent = 'New';
+            userDiv.appendChild(badge);
+        }
+
         userListBox.appendChild(userDiv);
     });
 }
+
 
 let selectedUser = null;
 function selectUser(username) {
@@ -55,6 +68,7 @@ function selectUser(username) {
 const messageHandlers = {
     search_results: (data) => displayUsers(data),
     direct_message: (data) => processDirectMessage(data),
+    unread_messages: (data) => showUnreadMessages(data),
     system: (data) => {
         console.log(data)
     },
@@ -79,6 +93,33 @@ const processDirectMessage = (data) => {
         userList.appendChild(li);
     }
 }
+
+const showUnreadMessages = (data) => {
+    const messages = data.messages || []
+    const senders = new Set();
+    const chatBox = document.getElementById("chatBox");
+    chatBox.innerHTML = "";
+    messages.forEach((message) => {
+        const { sender, text, time } = message;
+        senders.add(sender);
+        const localTime = new Date(time + " UTC").toLocaleString();
+        const msgElement = document.createElement("div");
+        msgElement.className = "mb-2";
+        msgElement.innerHTML = `<strong>${sender}</strong> <small class="text-muted">[${localTime}]</small>: ${text}`;
+        chatBox.appendChild(msgElement);
+    })
+    displayUsers({}, [...senders]);
+}
+
+const updateUserListWithSenders = (senders) => {
+    const userList = document.getElementById("userList");
+    senders.forEach((sender) => {
+        const li = document.createElement("li");
+        li.className = "list-group-item list-group-item-warning";
+        li.innerText = `New message from ${sender}`;
+        userList.appendChild(li);
+    });
+};
 
 function processMessage(data) {
     server_msg = JSON.parse(data)
