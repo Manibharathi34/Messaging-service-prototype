@@ -21,13 +21,12 @@ class MessageProcessor:
                 return client_id
             case "search_users":
                 client_id = session.get_user_client_id(data.get("name"))
-                matches = session.get_user(data.get("term", ""))
+                matches = await session.search_users(data.get("term", ""))
                 await connection.send_message(
                     client_id, {"type": "search_results", "matches": matches}
                 )
             case "direct_message":
                 to_client_id = session.get_user_client_id(data["to"])
-                print(f"to client is {to_client_id}")
                 await connection.send_message(
                     to_client_id,
                     {
@@ -38,7 +37,8 @@ class MessageProcessor:
                 )
             case "heartbeat":
                 logger.info(
-                    f"💓 Heartbeat received from {session.get_user_client_id(data.get('name'))}"
+                    "Heartbeat received from %s",
+                    session.get_user_client_id(data.get("name")),
                 )
             case _:
                 await connection.send_message(

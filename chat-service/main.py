@@ -4,6 +4,8 @@ from connection_manager import ConnectionManager
 from session_manager import SessionManager
 from message_processor import MessageProcessor
 import logging
+from db.db_connection import database, engine
+from db.models import metadata
 
 connection = ConnectionManager()
 session = SessionManager()
@@ -12,9 +14,27 @@ app = FastAPI()
 logger = logging.getLogger(__name__)
 
 
+@app.on_event("startup")
+async def startup():
+    try:
+        metadata.create_all(engine)
+        print("#### tables created #################")
+        await database.connect()
+        print("Database connected successfully!!!!!!!!!! ##########")
+
+        logger.info(" Connected to DB")
+    except Exception as e:
+        logger.error(f"DB connection failed: {e}")
+
+
+@app.on_event("shutdown")
+async def shutdown():
+    await database.disconnect()
+
+
 @app.get("/startchat")
 async def start_chat(name: str = Query(...)):
-    session.initialize_session(name)
+    await session.initialize_session(name)
     return JSONResponse({"status": "ok", "message": "initiate chat", "id": name})
 
 

@@ -1,0 +1,5 @@
+.DS_Store
+nginx/.DS_Store
+nginx/static/.DS_Store
+.env
+
