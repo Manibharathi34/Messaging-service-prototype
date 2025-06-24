@@ -11,9 +11,17 @@ session = SessionManager()
 
 class MessageProcessor:
     async def process_message(self, message: str):
-        data = json.loads(message)
-        print(f"incoming msg = {data}")
+        """Process incoming WebSocket message and route to appropriate handler."""
+        try:
+            data = json.loads(message)
+        except json.JSONDecodeError as e:
+            logger.error("Invalid JSON message: %s", e)
+            return ""
+        logger.debug("incoming message is %s", data)
         msg_type = data.get("type")
+        if not msg_type:
+            logger.error("Message missing 'type' field %s", data)
+            return ""
         client_id = ""
 
         match msg_type:
@@ -27,6 +35,9 @@ class MessageProcessor:
                 )
             case "direct_message":
                 to_client_id = session.get_user_client_id(data["to"])
+                if not to_client_id:
+                    logger.error("Recipient '%s' not found", data["to"])
+                    return ""
                 await connection.send_message(
                     to_client_id,
                     {
@@ -41,6 +52,7 @@ class MessageProcessor:
                     session.get_user_client_id(data.get("name")),
                 )
             case _:
+                logger.warning("Unknown message type: %s", msg_type)
                 await connection.send_message(
                     client_id,
                     {"type": "error", "message": f"Unknown message type: {msg_type}"},

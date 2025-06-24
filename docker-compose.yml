@@ -13,7 +13,8 @@ services:
   chat-service:
     build: ./chat-service
     environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      - DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      - LOG_LEVEL: DEBUG
     depends_on:
       - postgres
     expose:

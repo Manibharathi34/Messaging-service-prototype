@@ -1,11 +1,14 @@
+import logging
 from fastapi import FastAPI, WebSocket, Query
 from fastapi.responses import JSONResponse
 from connection_manager import ConnectionManager
 from session_manager import SessionManager
 from message_processor import MessageProcessor
-import logging
 from db.db_connection import database, engine
 from db.models import metadata
+from utils.logger import setup_logger
+
+setup_logger()
 
 connection = ConnectionManager()
 session = SessionManager()
@@ -18,9 +21,9 @@ logger = logging.getLogger(__name__)
 async def startup():
     try:
         metadata.create_all(engine)
-        print("#### tables created #################")
+        logger.info("#### tables created #################")
         await database.connect()
-        print("Database connected successfully!!!!!!!!!! ##########")
+        logger.info("Database connected successfully!!!!!!!!!! ##########")
 
         logger.info(" Connected to DB")
     except Exception as e:
@@ -41,7 +44,7 @@ async def start_chat(name: str = Query(...)):
 @app.websocket("/startchat/ws")
 async def websocket_endpoint(websocket: WebSocket):
     name = websocket.query_params.get("name")
-    logger.info(f"name received in WebSocket initiation: {name}")
+    logger.info("name received in WebSocket initiation: %s", name)
     client_id = session.get_user_client_id(name)
     await connection.connect(client_id, websocket)
 
@@ -50,5 +53,5 @@ async def websocket_endpoint(websocket: WebSocket):
             message = await websocket.receive_text()
             client_id = await msg_processor.process_message(message)
     except Exception as e:
-        logger.warning(f"WebSocket disconnected: {e}")
+        logger.warning("WebSocket disconnected: %s", e)
         await connection.disconnect(client_id)
