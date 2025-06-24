@@ -37,7 +37,7 @@ async def shutdown():
 
 @app.get("/startchat")
 async def start_chat(name: str = Query(...)):
-    await session.initialize_session(name)
+    await session.get_user_id(name)
     return JSONResponse({"status": "ok", "message": "initiate chat", "id": name})
 
 
@@ -45,7 +45,7 @@ async def start_chat(name: str = Query(...)):
 async def websocket_endpoint(websocket: WebSocket):
     name = websocket.query_params.get("name")
     logger.info("name received in WebSocket initiation: %s", name)
-    client_id = session.get_user_client_id(name)
+    client_id = await session.get_user_id(name)
     await connection.connect(client_id, websocket)
 
     try:

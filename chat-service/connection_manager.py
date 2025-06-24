@@ -40,13 +40,13 @@ class ConnectionManager:
                 len(self.active_connections),
             )
 
-    async def send_message(self, client_id: str, message: dict):
+    async def send_message(self, client_id: str, message: dict) -> str:
         websocket = self.active_connections.get(client_id)
         if not websocket:
             logger.warning(
                 "Attempted to send message to unknown client_id: %s", client_id
             )
-            return
+            return "sent"
 
         if websocket.client_state == WebSocketState.CONNECTED:
             try:
@@ -54,3 +54,5 @@ class ConnectionManager:
             except Exception as e:
                 logger.error("Failed to send message to %s: %s", client_id, e)
                 await self.disconnect(client_id)
+                return "sent"
+            return "delivered"

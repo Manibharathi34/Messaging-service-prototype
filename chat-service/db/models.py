@@ -28,6 +28,8 @@ messages = Table(
     metadata,
     Column("id", Integer, primary_key=True, autoincrement=True),
     Column("chat_id", Integer, ForeignKey("chats.id"), nullable=False, index=True),
+    Column("sender_id", String, ForeignKey("users.id"), nullable=False, index=True),
     Column("text", Text, nullable=False),
     Column("time", DateTime(timezone=True), server_default=func.now(), index=True),
+    Column("status", String, nullable=False, server_default="sent"),
 )
